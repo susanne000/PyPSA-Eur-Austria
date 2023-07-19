@@ -1,0 +1,93 @@
+{
+ "cells": [
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "25fee2e2",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "#lib\n",
+    "import pypsa\n",
+    "import matplotlib.pyplot as plt\n",
+    "plt.style.use(\"bmh\")\n",
+    "%matplotlib inline\n",
+    "#Netzwerk importieren %jeweiligen Netzwerknamen eingeben\n",
+    "n= pypsa.Network(\"netzwerk_szenario1_1.5GtCo2.nc\")\n",
+    "p_by_carrier = (n.generators_t.p_max_pu * n.generators.p_nom_max).groupby(n.generators.carrier, axis=1).sum()\n",
+    "# ror\n",
+    "p_by_carrier['ror'] = n.generators_t.p.groupby(n.generators.carrier, axis=1).sum()['ror']\n",
+    "\n",
+    "print(p_by_carrier)\n",
+    "p_by_carrier.columns\n",
+    "p_by_carrier.columns\n",
+    "colors = {\n",
+    "    \"ror\": \"blue\",\n",
+    "    \"onwind\": \"cyan\",\n",
+    "    \"solar\": \"brown\",\n",
+    "}\n",
+    "# Umordnen\n",
+    "cols = [\n",
+    "    \"ror\",\n",
+    "    \"onwind\",\n",
+    "    \"solar\",\n",
+    "]\n",
+    "p_by_carrier = p_by_carrier[cols]\n",
+    "c = [colors[col] for col in p_by_carrier.columns]\n",
+    "\n",
+    "# Definiere Modellierungsjahr\n",
+    "new_entry_year = 2050\n",
+    "\n",
+    "# Update index des Graphen\n",
+    "p_by_carrier.index = p_by_carrier.index.map(lambda x: x.replace(year=new_entry_year))\n",
+    "\n",
+    "# Plot Daten\n",
+    "fig, ax = plt.subplots(figsize=(12, 6))\n",
+    "ax.stackplot(p_by_carrier.index, p_by_carrier.T/1e3, labels=p_by_carrier.columns, colors=[colors[col] for col in p_by_carrier.columns], alpha=0.7)\n",
+    "ax.legend(ncol=4, loc=\"upper left\")\n",
+    "ax.set_ylabel(\"GW\")\n",
+    "ax.set_xlabel(\"\")\n",
+    "\n",
+    "fig.tight_layout()\n",
+    "plt.show()\n",
+    "# Name Kategorien definieren\n",
+    "new_labels = {\n",
+    "    \"ror\": \"Hydro\",\n",
+    "    \"onwind\": \"Wind\",\n",
+    "    \"solar\": \"Solar\",\n",
+    "}\n",
+    "\n",
+    "# Plot mit umbenannten Kategorien\n",
+    "fig, ax = plt.subplots(figsize=(12, 6))\n",
+    "ax.stackplot(p_by_carrier.index, p_by_carrier.T/1e3, labels=[new_labels.get(col, col) for col in p_by_carrier.columns], colors=[colors[col] for col in p_by_carrier.columns], alpha=0.7)\n",
+    "ax.legend(ncol=4, loc=\"upper left\")\n",
+    "ax.set_ylabel(\"GW\")\n",
+    "ax.set_xlabel(\"\")\n",
+    "\n",
+    "fig.tight_layout()\n",
+    "plt.show()\n"
+   ]
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 3 (ipykernel)",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.10.11"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 5
+}
